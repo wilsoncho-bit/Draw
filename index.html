@@ -30,6 +30,7 @@
 <div id="toolbar">
   顏色: <input type="color" id="color" value="#000000">
   筆刷: <input type="range" id="size" min="1" max="50" value="5">
+  <button id="pencil">鉛筆</button>
   <button id="eraser">橡皮擦</button>
   <button id="clear">清空畫布</button>
   <button id="save">下載圖片</button>
@@ -40,7 +41,7 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 let drawing = false;
-let erasing = false;
+let tool = 'pencil'; // 預設鉛筆
 
 // 初始設定
 ctx.lineCap = 'round';
@@ -49,15 +50,18 @@ ctx.strokeStyle = document.getElementById('color').value;
 ctx.lineWidth = document.getElementById('size').value;
 
 // 工具事件
+document.getElementById('pencil').addEventListener('click', () => {
+  tool = 'pencil';
+  ctx.strokeStyle = document.getElementById('color').value;
+});
+document.getElementById('eraser').addEventListener('click', () => {
+  tool = 'eraser';
+});
 document.getElementById('color').addEventListener('change', e => {
-  ctx.strokeStyle = e.target.value;
-  erasing = false;
+  if (tool === 'pencil') ctx.strokeStyle = e.target.value;
 });
 document.getElementById('size').addEventListener('input', e => {
   ctx.lineWidth = e.target.value;
-});
-document.getElementById('eraser').addEventListener('click', () => {
-  erasing = true;
 });
 document.getElementById('clear').addEventListener('click', () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -98,11 +102,14 @@ function draw(e) {
   if (!drawing) return;
   e.preventDefault();
   const pos = getPos(e);
-  if (erasing) {
+
+  if (tool === 'eraser') {
     ctx.globalCompositeOperation = 'destination-out';
   } else {
     ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = document.getElementById('color').value;
   }
+
   ctx.lineTo(pos.x, pos.y);
   ctx.stroke();
 }
